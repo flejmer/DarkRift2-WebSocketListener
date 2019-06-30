@@ -19,9 +19,13 @@ public class WebSocketClientConnection : NetworkClientConnection
 
         RemoteEndPoints = new List<IPEndPoint> {endPoint};
 
+#if UNITY_WEBGL && !UNITY_EDITOR
         _webSocketClient = JavaScriptWebsocketClient.Instance;
+#else
+        _webSocketClient = WebSocketSharpWebSocketClient.Instance;
+#endif
         _connectionState = ConnectionState.Disconnected;
-        
+
         SetUpWebSocketCallbacks();
     }
 
@@ -57,7 +61,7 @@ public class WebSocketClientConnection : NetworkClientConnection
         return SendMessage(message);
     }
     
-    private bool SendMessage(IMessageBuffer message)
+    private bool SendMessage(MessageBuffer message)
     {
         if (_connectionState == ConnectionState.Disconnected)
             return false;
