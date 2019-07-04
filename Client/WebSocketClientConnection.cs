@@ -73,7 +73,6 @@ public class WebSocketClientConnection : NetworkClientConnection
     public override bool Disconnect()
     {
         _webSocketClient.DisconnectFromServer();
-        _connectionState = ConnectionState.Disconnected;
         return true;
     }
     
