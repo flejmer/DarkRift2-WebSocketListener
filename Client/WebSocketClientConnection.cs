@@ -74,7 +74,6 @@ public class WebSocketClientConnection : NetworkClientConnection
     {
         _webSocketClient.DisconnectFromServer();
         _connectionState = ConnectionState.Disconnected;
-        HandleDisconnection();
         return true;
     }
     

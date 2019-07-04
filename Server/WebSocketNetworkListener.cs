@@ -10,7 +10,7 @@ namespace WebSocketListener
 {
     public class WebSocketNetworkListener : NetworkListener
     {
-        public override Version Version => new Version(1, 0, 0);
+        public override Version Version => new Version(1, 0, 1);
 
         private readonly WebSocketServer _serverSocket;
 
@@ -52,7 +52,7 @@ namespace WebSocketListener
 
         private void NewSessionConnectedHandler(WebSocketSession session)
         {
-            var serverConnection = new WebSocketSessionServerConnection(session, _ipEndPoint);
+            var serverConnection = new WebSocketSessionServerConnection(session);
             serverConnection.OnDisconnect += ServerSessionEndHandler;
             
             RegisterClientSession(session, serverConnection);

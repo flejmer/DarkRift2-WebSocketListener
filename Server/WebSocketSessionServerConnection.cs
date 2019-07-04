@@ -20,9 +20,9 @@ namespace WebSocketListener
         private ConnectionState _connectionState;
         private readonly WebSocketSession _webSocketSession;
 
-        public WebSocketSessionServerConnection(WebSocketSession webSocketSession, IPEndPoint endPoint)
+        public WebSocketSessionServerConnection(WebSocketSession webSocketSession)
         {
-            RemoteEndPoints = new List<IPEndPoint> {endPoint};
+            RemoteEndPoints = new List<IPEndPoint> { webSocketSession.RemoteEndPoint };
             
             _webSocketSession = webSocketSession;
             _connectionState = ConnectionState.Connected;
@@ -35,28 +35,17 @@ namespace WebSocketListener
 
         public override void StartListening() { }
 
-        public void MessageRecievedHandler(byte[] buffer)
+        public void MessageReceivedHandler(byte[] buffer)
         {
             using (var messageBuffer = MessageBuffer.Create(buffer.Length))
             {
                 Buffer.BlockCopy(buffer, 0, messageBuffer.Buffer, 0, buffer.Length);
                 messageBuffer.Count = buffer.Length;
-
                 HandleMessageReceived(messageBuffer, SendMode.Reliable);
             }
         }
         
         public override bool SendMessageReliable(MessageBuffer message)
-        {
-            return SendMessage(message);
-        }
-
-        public override bool SendMessageUnreliable(MessageBuffer message)
-        {
-            return SendMessage(message);
-        }
-
-        private bool SendMessage(IMessageBuffer message)
         {
             if (_connectionState == ConnectionState.Disconnected)
             {
@@ -64,7 +53,27 @@ namespace WebSocketListener
                 return false;
             }
 
-            _webSocketSession.Send(message.Buffer, 0, message.Count);
+            var dataBuffer = new byte[message.Count];
+            Buffer.BlockCopy(message.Buffer, 0, dataBuffer, 0, message.Count);
+            
+            _webSocketSession.Send(dataBuffer, 0, dataBuffer.Length);
+            message.Dispose();
+
+            return true;
+        }
+
+        public override bool SendMessageUnreliable(MessageBuffer message)
+        {
+            if (_connectionState == ConnectionState.Disconnected)
+            {
+                message.Dispose();
+                return false;
+            }
+
+            var dataBuffer = new byte[message.Count];
+            Buffer.BlockCopy(message.Buffer, 0, dataBuffer, 0, message.Count);
+            
+            _webSocketSession.Send(dataBuffer, 0, dataBuffer.Length);
             message.Dispose();
 
             return true;
