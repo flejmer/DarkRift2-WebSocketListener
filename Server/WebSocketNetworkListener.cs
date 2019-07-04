@@ -45,7 +45,6 @@ namespace WebSocketListener
         public override void StartListening()
         {
             _serverSocket.NewSessionConnected += NewSessionConnectedHandler;
-            _serverSocket.NewMessageReceived += NewMessageReceivedHandler;
             _serverSocket.NewDataReceived += NewDataReceivedHandler;
             _serverSocket.SessionClosed += SessionClosedHandler;
             _serverSocket.Start();
@@ -62,18 +61,24 @@ namespace WebSocketListener
 
         private void RegisterClientSession(WebSocketSession session, WebSocketSessionServerConnection connection)
         {
-            if (_connections.ContainsKey(session))
-                return;
+            lock (_connections)
+            {
+                if (_connections.ContainsKey(session))
+                    return;
             
-            _connections[session] = connection;
+                _connections[session] = connection;
+            }
         }
 
         private void UnregisterClientSession(WebSocketSession session)
         {
-            if (!_connections.ContainsKey(session))
-                return;
+            lock (_connections)
+            {
+                if (!_connections.ContainsKey(session))
+                    return;
             
-            _connections.Remove(session);
+                _connections.Remove(session);
+            }
         }
 
         private void ServerSessionEndHandler(WebSocketSession session)
@@ -83,23 +88,23 @@ namespace WebSocketListener
 
         private void SessionClosedHandler(WebSocketSession session, CloseReason closeReason)
         {
-            if (!_connections.ContainsKey(session))
-                return;
+            lock (_connections)
+            {
+                if (!_connections.ContainsKey(session))
+                    return;
             
-            _connections[session].ClientDisconnected();
-            UnregisterClientSession(session);
-        }
-
-        private void NewMessageReceivedHandler(WebSocketSession session, string message)
-        {
-            Console.WriteLine("Text message received: " + message);
-            session.Send("Echo - " + message);
+                _connections[session].ClientDisconnected();
+                UnregisterClientSession(session);
+            }
         }
 
         private void NewDataReceivedHandler(WebSocketSession session, byte[] dataBuffer)
         {
-            if (!_connections.ContainsKey(session)) return;
-            _connections[session].MessageRecievedHandler(dataBuffer);
+            lock (_connections)
+            {
+                if (!_connections.ContainsKey(session)) return;
+                _connections[session].MessageReceivedHandler(dataBuffer);
+            }
         }
     }
 }
