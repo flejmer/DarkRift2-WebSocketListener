@@ -25,17 +25,22 @@ public class WebSocketClientConnection : NetworkClientConnection
         _webSocketClient = WebSocketSharpWebSocketClient.Instance;
 #endif
         _connectionState = ConnectionState.Disconnected;
-
-        SetUpWebSocketCallbacks();
     }
 
-    private void SetUpWebSocketCallbacks()
+    private void SubscribeToWebSocketCallbacks()
     {
         _webSocketClient.Connected += OnConnected;
         _webSocketClient.Disconnected += OnDisconnected;
         _webSocketClient.ReceivedByteArrayMessage += OnReceivedByteArrayMessage;
-        _webSocketClient.ReceivedTextMessage += OnReceivedTextMessage;
         _webSocketClient.ReceivedError += OnReceivedError;
+    }
+    
+    private void UnsubscribeFromWebSocketCallbacks()
+    {
+        _webSocketClient.Connected -= OnConnected;
+        _webSocketClient.Disconnected -= OnDisconnected;
+        _webSocketClient.ReceivedByteArrayMessage -= OnReceivedByteArrayMessage;
+        _webSocketClient.ReceivedError -= OnReceivedError;
     }
     
     public override IPEndPoint GetRemoteEndPoint(string name)
@@ -46,6 +51,8 @@ public class WebSocketClientConnection : NetworkClientConnection
     public override void Connect()
     {
         _connectionState = ConnectionState.Connecting;
+        
+        SubscribeToWebSocketCallbacks();
 
         var endPoint = RemoteEndPoints.First();
         _webSocketClient.ConnectToServer(endPoint.Address, endPoint.Port);
@@ -84,6 +91,8 @@ public class WebSocketClientConnection : NetworkClientConnection
     private void OnDisconnected()
     {
         _connectionState = ConnectionState.Disconnected;
+        
+        UnsubscribeFromWebSocketCallbacks();
         HandleDisconnection();
     }
 
@@ -96,8 +105,6 @@ public class WebSocketClientConnection : NetworkClientConnection
             HandleMessageReceived(messageBuffer, SendMode.Reliable);
         }
     }
-    
-    private void OnReceivedTextMessage(string message) { }
-    
+
     private void OnReceivedError() { }
 }
