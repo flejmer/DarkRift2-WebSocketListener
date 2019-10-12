@@ -71,5 +71,11 @@ public void Connect(IPAddress ip, int port, IPVersion ipVersion)
 ##### Disclaimer #####
 
 `Connect` is run in Unity main thread synchronously, but the `WebSocket` connects asynchronously. This means that in some cases connection is still being established, but log indicates that `Connection failed`.
+
 Similarly, when server is not running and connection is attempted will cause a few seconds of freeze. Ideally, `ConnectInBackground` should be used, but current DarkRift version that is compatible with this listener (2.4.5) uses threathing for this method. Unfortunately threads are not available in WebGL builds.
 
+#### Optional ####
+
+I added `WebSocketUnityClient` for easier client implementation. You can use it instead of package included `UnityClient` if all you care about is WebSocket connection.
+
+To use it, copy `WebSocketUnityClient.cs` from `/Client/WebSocketUnityClient` folder and add to your Unity project. Similarly, copy `WebSocketUnityClientEditor.cs` form `/Client/WebSocketUnityClient/Editor` and add it to your Unity projects `Editor` folder.
