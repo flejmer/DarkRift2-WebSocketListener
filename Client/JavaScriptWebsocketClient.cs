@@ -59,9 +59,10 @@ public class JavaScriptWebsocketClient : IWebSocketClient
         SetupReceivedErrorCallbackFunction(ReceivedErrorCallback);
     }
 
-    public void ConnectToServer(IPAddress ip, int port)
+    public void ConnectToServer(IPAddress ip, int port, bool isUsingSecureConnection)
     {
-        ConnectWebSocket($"ws://{ip}:{port}");
+        var urlPrefix = isUsingSecureConnection ? "wss" : "ws";
+        ConnectWebSocket($"{urlPrefix}://{ip}:{port}");
     }
     
     public void DisconnectFromServer()

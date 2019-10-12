@@ -21,11 +21,12 @@ public class WebSocketSharpWebSocketClient : IWebSocketClient
     
     private WebSocketSharpWebSocketClient() { }
     
-    public void ConnectToServer(IPAddress ip, int port)
+    public void ConnectToServer(IPAddress ip, int port, bool isUsingSecureConnection)
     {
         if (_webSocketConnection != null) return;
-        
-        _webSocketConnection = new WebSocket($"ws://{ip}:{port}");
+
+        var urlPrefix = isUsingSecureConnection ? "wss" : "ws";
+        _webSocketConnection = new WebSocket($"{urlPrefix}://{ip}:{port}");
 
         _webSocketConnection.OnOpen += (sender, args) =>
         {

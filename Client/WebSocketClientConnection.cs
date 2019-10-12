@@ -12,10 +12,14 @@ public class WebSocketClientConnection : NetworkClientConnection
 
     private ConnectionState _connectionState;
     private readonly IWebSocketClient _webSocketClient;
+    
+    private bool _isUsingSecureConnection;
 
-    public WebSocketClientConnection(IPAddress ipAddress, int port)
+    public WebSocketClientConnection(IPAddress ipAddress, int port, bool isUsingSecureConnection)
     {
         var endPoint = new IPEndPoint(ipAddress, port);
+
+        _isUsingSecureConnection = isUsingSecureConnection;
 
         RemoteEndPoints = new List<IPEndPoint> {endPoint};
 
@@ -55,7 +59,7 @@ public class WebSocketClientConnection : NetworkClientConnection
         SubscribeToWebSocketCallbacks();
 
         var endPoint = RemoteEndPoints.First();
-        _webSocketClient.ConnectToServer(endPoint.Address, endPoint.Port);
+        _webSocketClient.ConnectToServer(endPoint.Address, endPoint.Port, _isUsingSecureConnection);
     }
 
     public override bool SendMessageReliable(MessageBuffer message)

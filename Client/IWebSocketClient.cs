@@ -9,7 +9,7 @@ public interface IWebSocketClient
     event Action<string> ReceivedTextMessage;
     event Action ReceivedError;
 
-    void ConnectToServer(IPAddress ip, int port);
+    void ConnectToServer(IPAddress ip, int port, bool isUsingSecureConnection);
     void DisconnectFromServer();
     void SendMessageToServer(string text);
     void SendMessageToServer(byte[] array, int size);
