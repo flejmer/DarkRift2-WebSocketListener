@@ -10,7 +10,7 @@ namespace WebSocketListener
 {
     public class WebSocketNetworkListener : NetworkListener
     {
-        public override Version Version => new Version(1, 0, 1);
+        public override Version Version => new Version(1, 0, 2);
 
         private readonly WebSocketServer _serverSocket;
 

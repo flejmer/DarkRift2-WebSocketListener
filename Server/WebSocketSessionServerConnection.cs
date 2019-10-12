@@ -103,7 +103,7 @@ namespace WebSocketListener
         
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(true);
+            base.Dispose(disposing);
             
             if (_disposedValue)
                 return;
