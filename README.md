@@ -45,6 +45,8 @@ Add this entry to server configuration `xml` file to allow it to listen to WebSo
 
 If you are using Unity embeded server, there is a bug within DarkRift that causes listeners to not be detected. There is a temporary fix for that described [here](https://github.com/DarkRiftNetworking/DarkRift/issues/58).
 
+UPDATE: This has been fixed in version 2.6.0.
+
 ### Client ###
 
 Copy all the files that are present in `/Client/Plugins` into your Unity project `Plugins` directory. Then copy all the `.cs` files from `/Client` into your designated scripts directory.
@@ -79,3 +81,7 @@ Similarly, when server is not running and connection is attempted will cause a f
 I added `WebSocketUnityClient` for easier client implementation. You can use it instead of package included `UnityClient` if all you care about is WebSocket connection.
 
 To use it, copy `WebSocketUnityClient.cs` from `/Client/WebSocketUnityClient` folder and add to your Unity project. Similarly, copy `WebSocketUnityClientEditor.cs` form `/Client/WebSocketUnityClient/Editor` and add it to your Unity projects `Editor` folder.
+
+##### Disclaimer #####
+
+Included `WebSocketUnityClient` is compatible with DarkRift2 2.6.0.

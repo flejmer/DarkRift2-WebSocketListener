@@ -206,7 +206,7 @@ namespace DarkRift.Client.Unity
 
             // DarkRift will recycle the message inside the event args when this method exits so make a copy now that we control the lifecycle of!
             Message message = e.GetMessage();
-            MessageReceivedEventArgs args = new MessageReceivedEventArgs(message, e.SendMode);
+            MessageReceivedEventArgs args = MessageReceivedEventArgs.Create(message, e.SendMode);
 
             Dispatcher.InvokeAsync(
                 () => 
@@ -218,6 +218,7 @@ namespace DarkRift.Client.Unity
                     }
 
                     message.Dispose();
+                    args.Dispose();
                 }
             );
         }
