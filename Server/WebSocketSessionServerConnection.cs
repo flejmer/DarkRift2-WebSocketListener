@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using DarkRift;
 using DarkRift.Server;
-using SuperWebSocket;
+using Fleck;
 
 namespace WebSocketListener
 {
@@ -13,19 +13,27 @@ namespace WebSocketListener
         public override ConnectionState ConnectionState => _connectionState;
         public override IEnumerable<IPEndPoint> RemoteEndPoints { get; }
 
-        public event Action<WebSocketSession> OnDisconnect; 
+        public event Action<IWebSocketConnection> OnDisconnect; 
 
         private bool _disposedValue;
         
         private ConnectionState _connectionState;
-        private readonly WebSocketSession _webSocketSession;
+        private readonly IWebSocketConnection _webSocketSession;
 
-        public WebSocketSessionServerConnection(WebSocketSession webSocketSession)
+        public WebSocketSessionServerConnection(IWebSocketConnection webSocketSession)
         {
-            RemoteEndPoints = new List<IPEndPoint> { webSocketSession.RemoteEndPoint };
+            RemoteEndPoints = new List<IPEndPoint> {
+                new IPEndPoint(
+                    IPAddress.Parse(webSocketSession.ConnectionInfo.ClientIpAddress),
+                    webSocketSession.ConnectionInfo.ClientPort
+                    )
+            };
             
             _webSocketSession = webSocketSession;
             _connectionState = ConnectionState.Connected;
+
+            webSocketSession.OnBinary += MessageReceivedHandler;
+            webSocketSession.OnClose += ClientDisconnected;
         }
 
         public override IPEndPoint GetRemoteEndPoint(string name)
@@ -35,8 +43,11 @@ namespace WebSocketListener
 
         public override void StartListening() { }
 
-        public void MessageReceivedHandler(byte[] buffer)
+        private void MessageReceivedHandler(byte[] buffer)
         {
+            if (_connectionState != ConnectionState.Connected)
+                return;
+
             using (var messageBuffer = MessageBuffer.Create(buffer.Length))
             {
                 Buffer.BlockCopy(buffer, 0, messageBuffer.Buffer, 0, buffer.Length);
@@ -56,7 +67,7 @@ namespace WebSocketListener
             var dataBuffer = new byte[message.Count];
             Buffer.BlockCopy(message.Buffer, 0, dataBuffer, 0, message.Count);
             
-            _webSocketSession.Send(dataBuffer, 0, dataBuffer.Length);
+            _webSocketSession.Send(dataBuffer);
             message.Dispose();
 
             return true;
@@ -73,7 +84,7 @@ namespace WebSocketListener
             var dataBuffer = new byte[message.Count];
             Buffer.BlockCopy(message.Buffer, 0, dataBuffer, 0, message.Count);
             
-            _webSocketSession.Send(dataBuffer, 0, dataBuffer.Length);
+            _webSocketSession.Send(dataBuffer);
             message.Dispose();
 
             return true;

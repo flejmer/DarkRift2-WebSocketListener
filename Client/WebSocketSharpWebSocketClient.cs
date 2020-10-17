@@ -14,19 +14,18 @@ public class WebSocketSharpWebSocketClient : IWebSocketClient
     public event Action Connected;
     public event Action Disconnected;
     public event Action<byte[]> ReceivedByteArrayMessage;
-    public event Action<string> ReceivedTextMessage;
     public event Action ReceivedError;
 
     private WebSocket _webSocketConnection;
     
     private WebSocketSharpWebSocketClient() { }
     
-    public void ConnectToServer(IPAddress ip, int port, bool isUsingSecureConnection)
+    public void ConnectToServer(string address, int port, bool isUsingSecureConnection)
     {
         if (_webSocketConnection != null) return;
 
         var urlPrefix = isUsingSecureConnection ? "wss" : "ws";
-        _webSocketConnection = new WebSocket($"{urlPrefix}://{ip}:{port}");
+        _webSocketConnection = new WebSocket($"{urlPrefix}://{address}:{port}");
 
         _webSocketConnection.OnOpen += (sender, args) =>
         {
@@ -39,12 +38,8 @@ public class WebSocketSharpWebSocketClient : IWebSocketClient
         };
         
         _webSocketConnection.OnMessage += (sender, args) =>
-        {
-            if (args.IsText)
-            {
-                ReceivedTextMessage?.Invoke(args.Data);
-            }
-            else if (args.IsBinary)
+        { 
+            if (args.IsBinary)
             {
                 ReceivedByteArrayMessage?.Invoke(args.RawData);
             }
@@ -62,11 +57,6 @@ public class WebSocketSharpWebSocketClient : IWebSocketClient
     {
         _webSocketConnection?.Close();
         _webSocketConnection = null;
-    }
-
-    public void SendMessageToServer(string text)
-    {
-        _webSocketConnection?.Send(text);
     }
 
     public void SendMessageToServer(byte[] array, int size)

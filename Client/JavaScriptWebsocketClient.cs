@@ -13,10 +13,8 @@ public class JavaScriptWebsocketClient : IWebSocketClient
     public event Action Connected;
     public event Action Disconnected;
     public event Action<byte[]> ReceivedByteArrayMessage;
-    public event Action<string> ReceivedTextMessage;
     public event Action ReceivedError;
     
-    private delegate void TextMessageCallback(IntPtr ptr);
     private delegate void ByteArrayMessageCallback(IntPtr buffer, IntPtr length);
 
     [DllImport("__Internal")]
@@ -33,48 +31,33 @@ public class JavaScriptWebsocketClient : IWebSocketClient
     
     [DllImport("__Internal")]
     private static extern void SetupReceivedByteArrayMessageCallbackFunction(ByteArrayMessageCallback callback);
-    
-    [DllImport("__Internal")]
-    private static extern void SetupReceivedTextMessageCallbackFunction(TextMessageCallback callback);
-    
+
     [DllImport("__Internal")]
     private static extern void SetupReceivedErrorCallbackFunction(Action action);
-    
-    [DllImport("__Internal")]
-    private static extern void SendTextMessage(string str);
-    
+
     [DllImport("__Internal")]
     private static extern void SendByteArrayMessage(byte[] array, int size);
-    
-    [DllImport("__Internal")]
-    private static extern void HelloString(string str);
 
-    
+
     private JavaScriptWebsocketClient()
     {
         SetupConnectionOpenCallbackFunction(ConnectionOpenCallback);
         SetupConnectionClosedCallbackFunction(ConnectionClosedCallback);
         SetupReceivedByteArrayMessageCallbackFunction(ReceivedByteArrayMessageCallback);
-        SetupReceivedTextMessageCallbackFunction(ReceivedTextMessageCallback);
         SetupReceivedErrorCallbackFunction(ReceivedErrorCallback);
     }
 
-    public void ConnectToServer(IPAddress ip, int port, bool isUsingSecureConnection)
+    public void ConnectToServer(string address, int port, bool isUsingSecureConnection)
     {
         var urlPrefix = isUsingSecureConnection ? "wss" : "ws";
-        ConnectWebSocket($"{urlPrefix}://{ip}:{port}");
+        ConnectWebSocket($"{urlPrefix}://{address}:{port}");
     }
     
     public void DisconnectFromServer()
     {
         DisconnectWebSocket();
     }
-    
-    public void SendMessageToServer(string text)
-    {
-        SendTextMessage(text);
-    }
-    
+
     public void SendMessageToServer(byte[] array, int size)
     {
         SendByteArrayMessage(array, size);
@@ -100,14 +83,7 @@ public class JavaScriptWebsocketClient : IWebSocketClient
         Marshal.Copy(buffer, bytes, 0, readLength);
         Instance.ReceivedByteArrayMessage?.Invoke(bytes);
     }
-    
-    [MonoPInvokeCallback(typeof(TextMessageCallback))]
-    private static void ReceivedTextMessageCallback(IntPtr ptr)
-    {
-        var text = Marshal.PtrToStringAuto(ptr);
-        Instance.ReceivedTextMessage?.Invoke(text);
-    }
-    
+
     [MonoPInvokeCallback(typeof(Action))]
     private static void ReceivedErrorCallback()
     {

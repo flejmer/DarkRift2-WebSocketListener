@@ -8,45 +8,14 @@ namespace DarkRift.Client.Unity
     [AddComponentMenu("DarkRift/WebSocket Client")]
 	public sealed class WebSocketUnityClient : MonoBehaviour
 	{
-        /// <summary>
-        ///     The IP address this client connects to.
-        /// </summary>
-        public IPAddress Address
-        {
-            get { return IPAddress.Parse(address); }
-            set { address = value.ToString(); }
-        }
-
         [SerializeField]
         [Tooltip("The address of the server to connect to.")]
-        string address = IPAddress.Loopback.ToString();                 //Unity requires a serializable backing field so use string
+        public string address = IPAddress.Loopback.ToString(); //Unity requires a serializable backing field so use string
 
-        /// <summary>
-        ///     The port this client connects to.
-        /// </summary>
-        public ushort Port
-        {
-            get { return port; }
-            set { port = value; }
-        }
-
-		[SerializeField]
+        [SerializeField]
 		[Tooltip("The port the server is listening on.")]
 		ushort port = 4296;
 
-        /// <summary>
-        ///     The IP version to connect with.
-        /// </summary>
-        public IPVersion IPVersion
-        {
-            get { return ipVersion; }
-            set { ipVersion = value; }
-        }
-
-        [SerializeField]
-        [Tooltip("The IP protocol version to connect using.")]          //Declared in custom editor
-        private IPVersion ipVersion = IPVersion.IPv4;
-        
         [SerializeField]
         [Tooltip("Specifies whether the client will connect to the server using WebSocket connection over TLS.")]
         private bool isUsingSecureConnection = false;
@@ -88,18 +57,6 @@ namespace DarkRift.Client.Unity
         /// </summary>
         public ushort ID => Client.ID;
 
-        /// <summary>
-        ///     Returns whether or not this client is connected to the server.
-        /// </summary>
-        [Obsolete("User ConnectionState instead.")]
-        public bool Connected
-        {
-            get
-            {
-                return Client.Connected;
-            }
-        }
-        
         /// <summary>
         ///     Returns the state of the connection with the server.
         /// </summary>
@@ -148,7 +105,7 @@ namespace DarkRift.Client.Unity
 		{
             //If auto connect is true then connect to the server
             if (autoConnect)
-			    Connect(Address, port, ipVersion);
+			    Connect(address, port);
 		}
 
         void Update()
@@ -172,16 +129,11 @@ namespace DarkRift.Client.Unity
         /// <summary>
         ///     Connects to a remote server.
         /// </summary>
-        /// <param name="ip">The IP address of the server.</param>
+        /// <param name="ip">The IP address or domain of the server.</param>
         /// <param name="port">The port of the server.</param>
-        public void Connect(IPAddress ip, int port, IPVersion ipVersion)
+        public void Connect(string address, int port)
         {
-            Client.Connect(new WebSocketClientConnection(ip, port, isUsingSecureConnection));
-            
-            if (ConnectionState == ConnectionState.Connected)
-                Debug.Log("Connected to " + ip + " on port " + port + " using " + ipVersion + ".");
-            else
-                Debug.Log("Connection failed to " + ip + " on port " + port + " using " + ipVersion + ".");
+            Client.Connect(new WebSocketClientConnection(address, port, isUsingSecureConnection));
         }
 
         /// <summary>

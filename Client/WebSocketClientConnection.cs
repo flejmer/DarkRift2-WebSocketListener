@@ -13,15 +13,17 @@ public class WebSocketClientConnection : NetworkClientConnection
     private ConnectionState _connectionState;
     private readonly IWebSocketClient _webSocketClient;
     
-    private bool _isUsingSecureConnection;
+    private readonly bool _isUsingSecureConnection;
+    private readonly string _address;
+    private readonly int _port;
 
-    public WebSocketClientConnection(IPAddress ipAddress, int port, bool isUsingSecureConnection)
+    public WebSocketClientConnection(string address, int port, bool isUsingSecureConnection)
     {
-        var endPoint = new IPEndPoint(ipAddress, port);
-
         _isUsingSecureConnection = isUsingSecureConnection;
+        _address = address;
+        _port = port;
 
-        RemoteEndPoints = new List<IPEndPoint> {endPoint};
+        RemoteEndPoints = new List<IPEndPoint> {new IPEndPoint(IPAddress.Parse("0.0.0.0"), port)};
 
 #if UNITY_WEBGL && !UNITY_EDITOR
         _webSocketClient = JavaScriptWebsocketClient.Instance;
@@ -57,9 +59,8 @@ public class WebSocketClientConnection : NetworkClientConnection
         _connectionState = ConnectionState.Connecting;
         
         SubscribeToWebSocketCallbacks();
-
-        var endPoint = RemoteEndPoints.First();
-        _webSocketClient.ConnectToServer(endPoint.Address, endPoint.Port, _isUsingSecureConnection);
+        
+        _webSocketClient.ConnectToServer(_address, _port, _isUsingSecureConnection);
     }
 
     public override bool SendMessageReliable(MessageBuffer message)

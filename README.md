@@ -2,19 +2,19 @@
 
 Listener for [DarkRift 2](https://darkriftnetworking.com/DarkRift2) that enables communication over WebSocket.
 
-This allows you to use DarkRift2 networking in WebGL games.
+Allows you to use DarkRift2 networking in WebGL games.
 
 Should be compatible with DarkRift2 version 2.4.0 and above.
 
 ## Notes
 
-Server side uses a [SuperWebSocket](https://archive.codeplex.com/?p=superwebsocket) implementation of WebSocket protocol. 
+Server side uses [Fleck](https://github.com/statianzo/Fleck) implementation of WebSocket protocol. 
 
 Client side uses [websocket-sharp](https://github.com/sta/websocket-sharp) for non-WebGL build.
 
 ## Prerequisites
 - [DarkRift 2](https://darkriftnetworking.com/DarkRift2)
-- [SuperWebSocket](https://archive.codeplex.com/?p=superwebsocket)
+- [Fleck](https://github.com/statianzo/Fleck)
 - [websocket-sharp](https://github.com/sta/websocket-sharp)
 
 ## Installation
@@ -27,17 +27,25 @@ Copy all `.dll` files that present in `/Server/Plugins` into your DarkRift2 serv
 
 #### Self Build
 
-To build `NetworkListener` yourself, follow the usual flow of creating plugins for DarkRift2 that is described in detail [here](https://darkriftnetworking.com/DarkRift2/Docs/2.4.4/getting_started/3_server_basics.html).
+To build `NetworkListener` yourself, follow the usual flow of creating plugins for DarkRift2 that is described in detail [here](https://darkriftnetworking.com/DarkRift2/Docs/2.7.0/getting_started/3_server_basics.html).
 
-`NetworkListener` depends on `SuperWebSocketNETServer` NuGet package so remember to add it to your project.
+`NetworkListener` depends on `Fleck` NuGet package so remember to add it to your project.
 
 #### Server Config
 
-Add this entry to server configuration `xml` file to allow it to listen to WebSocket connections.
+To create unsecured WebSocket server add this entry to server configuration `xml` file to allow it to listen to WebSocket connections.
 
 ```xml
-<listener name="WebSocketListener" type="WebSocketNetworkListener" address="0.0.0.0" port="4296">
+<listener name="WebSocketListener" type="WebSocketNetworkListener" address="0.0.0.0" port="4201">
   <settings noDelay="true" />
+</listener>
+```
+
+To create secure server certificate file needs to be provided and placed in server `Plugins` directory. Server configuration `xml` needs to include certificate file name and password.
+
+```xml
+<listener name="WebSocketListener Secure" type="WebSocketNetworkListener" address="0.0.0.0" port="4200">
+  <settings noDelay="true" certificateName="certificate_file_name.pfx" certificatePassword="certificatePassword"/>
 </listener>
 ```
 
@@ -56,19 +64,13 @@ To connect to websocket server you need to pass an instance of `WebSocketClientC
 Example:
 
 ```csharp
-public void Connect(IPAddress ip, int port, IPVersion ipVersion)
+public void Connect(string address, int port)
 {
-    // Client.Connect(ip, port, ipVersion);
-    Client.Connect(new WebSocketClientConnection(ip, port, false));
-            
-    if (ConnectionState == ConnectionState.Connected)
-        Debug.Log("Connected to " + ip + " on port " + port + " using " + ipVersion + ".");
-    else
-        Debug.Log("Connection failed to " + ip + " on port " + port + " using " + ipVersion + ".");
+    Client.Connect(new WebSocketClientConnection(address, port, false));
 }
 ```
 
-`false` here means that you are connecting to unsecured WebSocket server. 
+`false` here means that you are connecting to unsecured WebSocket server.
 
 ##### Disclaimer #####
 
@@ -84,4 +86,4 @@ To use it, copy `WebSocketUnityClient.cs` from `/Client/WebSocketUnityClient` fo
 
 ##### Disclaimer #####
 
-Included `WebSocketUnityClient` is compatible with DarkRift2 2.6.0.
+Included `WebSocketUnityClient` is compatible with DarkRift2 2.6.0 and above.
