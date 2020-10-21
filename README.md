@@ -4,7 +4,7 @@ Listener for [DarkRift 2](https://darkriftnetworking.com/DarkRift2) that enables
 
 Allows you to use DarkRift2 networking in WebGL games.
 
-Should be compatible with DarkRift2 version 2.4.0 and above.
+Should be compatible with DarkRift2 version 2.6.0 and above.
 
 ## Notes
 
@@ -27,7 +27,7 @@ Copy all `.dll` files that present in `/Server/Plugins` into your DarkRift2 serv
 
 #### Self Build
 
-To build `NetworkListener` yourself, follow the usual flow of creating plugins for DarkRift2 that is described in detail [here](https://darkriftnetworking.com/DarkRift2/Docs/2.7.0/getting_started/3_server_basics.html).
+To build `NetworkListener` yourself, follow the usual flow of creating plugins for DarkRift2 that is described in detail [here](https://darkriftnetworking.com/DarkRift2/Docs/2.6.0/getting_started/3_server_basics.html).
 
 `NetworkListener` depends on `Fleck` NuGet package so remember to add it to your project.
 
@@ -41,19 +41,13 @@ To create unsecured WebSocket server add this entry to server configuration `xml
 </listener>
 ```
 
-To create secure server certificate file needs to be provided and placed in server `Plugins` directory. Server configuration `xml` needs to include certificate file name and password.
+To create secure server, certificate file needs to be provided and placed in server working directory. Server configuration `xml` needs to include certificate file name and password.
 
 ```xml
 <listener name="WebSocketListener Secure" type="WebSocketNetworkListener" address="0.0.0.0" port="4200">
   <settings noDelay="true" certificateName="certificate_file_name.pfx" certificatePassword="certificatePassword"/>
 </listener>
 ```
-
-##### Disclaimer #####
-
-If you are using Unity embeded server, there is a bug within DarkRift that causes listeners to not be detected. There is a temporary fix for that described [here](https://github.com/DarkRiftNetworking/DarkRift/issues/58).
-
-UPDATE: This has been fixed in version 2.6.0.
 
 ### Client ###
 
@@ -80,10 +74,14 @@ Similarly, when server is not running and connection is attempted will cause a f
 
 #### Optional ####
 
+##### Client #####
+
 I added `WebSocketUnityClient` for easier client implementation. You can use it instead of package included `UnityClient` if all you care about is WebSocket connection.
 
 To use it, copy `WebSocketUnityClient.cs` from `/Client/WebSocketUnityClient` folder and add to your Unity project. Similarly, copy `WebSocketUnityClientEditor.cs` form `/Client/WebSocketUnityClient/Editor` and add it to your Unity projects `Editor` folder.
 
-##### Disclaimer #####
+`WebSocketUnityClient` should be compatible with DarkRift2 2.6.0 and above.
 
-Included `WebSocketUnityClient` is compatible with DarkRift2 2.6.0 and above.
+##### Server #####
+
+For embedded secure server, to ensure that certificate file is placed in server working directory after build you can use provided `PostprocessBuild.cs`. When placed inside `Editor` Unity directory it will run after every build and search for certificate file in `Assets` directory and subdirectories. If found, certificate file will be copied to build output path directory inside `Plugins` folder.
