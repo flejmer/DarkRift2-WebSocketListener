@@ -8,13 +8,10 @@ Should be compatible with DarkRift2 version 2.6.0 and above.
 
 ## Notes
 
-Server side uses [Fleck](https://github.com/statianzo/Fleck) implementation of WebSocket protocol. 
-
-Client side uses [websocket-sharp](https://github.com/sta/websocket-sharp) for non-WebGL build.
+Both client and server use [websocket-sharp](https://github.com/sta/websocket-sharp) implementation of WebSocket protocol. Client uses it for non-WebGL build.
 
 ## Prerequisites
 - [DarkRift 2](https://darkriftnetworking.com/DarkRift2)
-- [Fleck](https://github.com/statianzo/Fleck)
 - [websocket-sharp](https://github.com/sta/websocket-sharp)
 
 ## Installation
@@ -29,7 +26,7 @@ Copy all `.dll` files that present in `/Server/Plugins` into your DarkRift2 serv
 
 To build `NetworkListener` yourself, follow the usual flow of creating plugins for DarkRift2 that is described in detail [here](https://darkriftnetworking.com/DarkRift2/Docs/2.6.0/getting_started/3_server_basics.html).
 
-`NetworkListener` depends on `Fleck` NuGet package so remember to add it to your project.
+`NetworkListener` depends on `websocket-sharp` so remember to add reference to it in your project.
 
 #### Server Config
 
@@ -70,7 +67,7 @@ public void Connect(string address, int port)
 
 `Connect` is run in Unity main thread synchronously, but the `WebSocket` connects asynchronously. This means that in some cases connection is still being established, but log indicates that `Connection failed`.
 
-Similarly, when server is not running and connection is attempted will cause a few seconds of freeze. Ideally, `ConnectInBackground` should be used, but current DarkRift version that is compatible with this listener (2.4.5) uses threathing for this method. Unfortunately threads are not available in WebGL builds.
+Similarly, when server is not running and connection is attempted will cause a few seconds of freeze. Ideally, `ConnectInBackground` should be used, but current DarkRift version that is compatible with this listener (2.6.0) uses threathing for this method. Unfortunately threads are not available in WebGL builds.
 
 #### Optional ####
 

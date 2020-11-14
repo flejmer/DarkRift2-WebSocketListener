@@ -1,7 +1,8 @@
 ﻿#if !UNITY_WEBGL || UNITY_EDITOR
 
+using System.Net.Sockets;
+using System.Reflection;
 using System;
-using System.Net;
 using WebSocketSharp;
 
 public class WebSocketSharpWebSocketClient : IWebSocketClient
@@ -25,7 +26,8 @@ public class WebSocketSharpWebSocketClient : IWebSocketClient
         if (_webSocketConnection != null) return;
 
         var urlPrefix = isUsingSecureConnection ? "wss" : "ws";
-        _webSocketConnection = new WebSocket($"{urlPrefix}://{address}:{port}");
+
+        _webSocketConnection = new WebSocket($"{urlPrefix}://{address}:{port}/Listener");
 
         _webSocketConnection.OnOpen += (sender, args) =>
         {
@@ -51,6 +53,8 @@ public class WebSocketSharpWebSocketClient : IWebSocketClient
         };
         
         _webSocketConnection.Connect();
+        
+        ConfigureNoDelay();
     }
 
     public void DisconnectFromServer()
@@ -62,6 +66,22 @@ public class WebSocketSharpWebSocketClient : IWebSocketClient
     public void SendMessageToServer(byte[] array, int size)
     {
         _webSocketConnection?.Send(array);
+    }
+    
+    private void ConfigureNoDelay()
+    {
+        try
+        {
+            var field = typeof(WebSocket).GetField("_tcpClient", BindingFlags.NonPublic);
+            if (field != null && field.GetValue(_webSocketConnection) is TcpClient tcpClient)
+            {
+                tcpClient.NoDelay = true;
+            }
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine($"Couldn't disable Nagle's algorithm error: {exception.Message}");
+        }
     }
 }
 #endif

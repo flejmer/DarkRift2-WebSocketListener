@@ -1,5 +1,6 @@
-﻿using System;
-using System.Net;
+﻿#if UNITY_WEBGL
+
+using System;
 using System.Runtime.InteropServices;
 using AOT;
 
@@ -50,7 +51,7 @@ public class JavaScriptWebsocketClient : IWebSocketClient
     public void ConnectToServer(string address, int port, bool isUsingSecureConnection)
     {
         var urlPrefix = isUsingSecureConnection ? "wss" : "ws";
-        ConnectWebSocket($"{urlPrefix}://{address}:{port}");
+        ConnectWebSocket($"{urlPrefix}://{address}:{port}/Listener");
     }
     
     public void DisconnectFromServer()
@@ -90,3 +91,4 @@ public class JavaScriptWebsocketClient : IWebSocketClient
         Instance.ReceivedError?.Invoke();
     }
 }
+#endif

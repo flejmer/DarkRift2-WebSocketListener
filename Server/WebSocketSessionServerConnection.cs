@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using DarkRift;
 using DarkRift.Server;
-using Fleck;
 
 namespace WebSocketListener
 {
@@ -18,22 +17,19 @@ namespace WebSocketListener
         private bool _disposedValue;
         
         private ConnectionState _connectionState;
-        private readonly IWebSocketConnection _webSocketSession;
+        private readonly IWebSocketConnection _webSocketConnection;
 
-        public WebSocketSessionServerConnection(IWebSocketConnection webSocketSession)
+        public WebSocketSessionServerConnection(IWebSocketConnection webSocketConnection)
         {
             RemoteEndPoints = new List<IPEndPoint> {
-                new IPEndPoint(
-                    IPAddress.Parse(webSocketSession.ConnectionInfo.ClientIpAddress),
-                    webSocketSession.ConnectionInfo.ClientPort
-                    )
+                webSocketConnection.IpEndPoint
             };
             
-            _webSocketSession = webSocketSession;
+            _webSocketConnection = webSocketConnection;
             _connectionState = ConnectionState.Connected;
 
-            webSocketSession.OnBinary += MessageReceivedHandler;
-            webSocketSession.OnClose += ClientDisconnected;
+            webSocketConnection.BinaryMessageReceived += MessageReceivedHandler;
+            webSocketConnection.ConnectionClosed += ConnectionClosedHandler;
         }
 
         public override IPEndPoint GetRemoteEndPoint(string name)
@@ -67,7 +63,7 @@ namespace WebSocketListener
             var dataBuffer = new byte[message.Count];
             Buffer.BlockCopy(message.Buffer, 0, dataBuffer, 0, message.Count);
             
-            _webSocketSession.Send(dataBuffer);
+            _webSocketConnection.Send(dataBuffer);
             message.Dispose();
 
             return true;
@@ -84,7 +80,7 @@ namespace WebSocketListener
             var dataBuffer = new byte[message.Count];
             Buffer.BlockCopy(message.Buffer, 0, dataBuffer, 0, message.Count);
             
-            _webSocketSession.Send(dataBuffer);
+            _webSocketConnection.Send(dataBuffer);
             message.Dispose();
 
             return true;
@@ -92,23 +88,23 @@ namespace WebSocketListener
 
         public override bool Disconnect()
         {
-            if (_connectionState == ConnectionState.Disconnected)
-                return false;
-            
-            CloseConnection();
+            if (_connectionState == ConnectionState.Disconnecting)
+            {
+                _connectionState = ConnectionState.Disconnected;
+            }
+            else
+            {
+                _webSocketConnection.Close();
+            }
+
             return true;
         }
-        
-        private void CloseConnection()
+
+        private void ConnectionClosedHandler()
         {
-            _connectionState = ConnectionState.Disconnected;
+            _connectionState = ConnectionState.Disconnecting;
+            OnDisconnect?.Invoke(_webSocketConnection);
             
-            OnDisconnect?.Invoke(_webSocketSession);
-            _webSocketSession.Close();
-        }
-        
-        public void ClientDisconnected()
-        {
             HandleDisconnection();
         }
         
