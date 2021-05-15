@@ -75,10 +75,13 @@ public class WebSocketClientConnection : NetworkClientConnection
     
     private bool SendMessage(MessageBuffer message)
     {
-        if (_connectionState == ConnectionState.Disconnected)
+        if (_connectionState == ConnectionState.Disconnected) {
+            message.Dispose();
             return false;
+        }
         
         _webSocketClient.SendMessageToServer(message.Buffer, message.Count);
+        message.Dispose();
         return true;
     }
 
